@@ -67,7 +67,8 @@ export default class Logs extends Base<Props, State> {
 
 
         this.setState({containers, initContainers});
-        this.setContainer(containers[0]);
+        
+        this.setContainer(containers[containers.length - 1]);
     }
 
     setContainer(container: string) {

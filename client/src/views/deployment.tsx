@@ -12,6 +12,7 @@ import PodRamChart from '../components/podRamChart';
 import ReplicaSetsPanel from '../components/replicaSetsPanel';
 import SaveButton from '../components/saveButton';
 import ScaleButton from '../components/scaleButton';
+import RestartButton from '../components/restartButton';
 import api from '../services/api';
 import {filterByOwner, filterByOwners} from '../utils/filterHelper';
 import getMetrics from '../utils/metricsHelpers';
@@ -83,6 +84,12 @@ export default class DeploymentView extends Base<Props, State> {
             <div id='content'>
                 <ItemHeader title={['Deployment', namespace, name]} ready={!!item}>
                     <>
+                        <RestartButton
+                            namespace={namespace}
+                            name={name}
+                            restartApi={service.restart}
+                        />
+
                         <ScaleButton
                             namespace={namespace}
                             name={name}

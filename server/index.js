@@ -14,6 +14,7 @@ const OIDC_SECRET = process.env.OIDC_SECRET;
 const OIDC_URL = process.env.OIDC_URL;
 const OIDC_SCOPES = process.env.OIDC_SCOPES || 'openid email';
 const OIDC_METADATA = JSON.parse(process.env.OIDC_METADATA || '{}');
+//const API_URL = process.env.API_URL;
 const clientMetadata = Object.assign({client_id: OIDC_CLIENT_ID, client_secret: OIDC_SECRET}, OIDC_METADATA);
 
 console.log('OIDC_URL: ', OIDC_URL || 'None');
@@ -26,6 +27,7 @@ kc.loadFromDefault();
 const opts = {};
 kc.applyToRequest(opts);
 
+//const target = API_URL || kc.getCurrentCluster().server;
 const target = kc.getCurrentCluster().server;
 console.log('API URL: ', target);
 const agent = new https.Agent({ca: opts.ca});

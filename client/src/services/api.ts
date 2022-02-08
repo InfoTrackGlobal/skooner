@@ -24,10 +24,10 @@ const role = apiFactoryWithNamespace('rbac.authorization.k8s.io', 'v1', 'roles')
 const roleBinding = apiFactoryWithNamespace<RoleBinding>('rbac.authorization.k8s.io', 'v1', 'rolebindings');
 
 const daemonSet = apiFactoryWithNamespace('apps', 'v1', 'daemonsets');
-const deployment = apiFactoryWithNamespace('apps', 'v1', 'deployments', true);
-const replicaSet = apiFactoryWithNamespace('apps', 'v1', 'replicasets', true);
-const statefulSet = apiFactoryWithNamespace('apps', 'v1', 'statefulsets', true);
-const hpa = apiFactoryWithNamespace('autoscaling', 'v1', 'horizontalpodautoscalers', true);
+const deployment = apiFactoryWithNamespace('apps', 'v1', 'deployments', true, true);
+const replicaSet = apiFactoryWithNamespace('apps', 'v1', 'replicasets', true, false);
+const statefulSet = apiFactoryWithNamespace('apps', 'v1', 'statefulsets', true, true);
+const hpa = apiFactoryWithNamespace('autoscaling', 'v1', 'horizontalpodautoscalers', true, false);
 
 const cronJob = apiFactoryWithNamespace('batch', 'v1beta1', 'cronjobs');
 const job = apiFactoryWithNamespace('batch', 'v1', 'jobs');
