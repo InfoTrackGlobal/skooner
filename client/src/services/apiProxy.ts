@@ -25,6 +25,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 const BASE_HTTP_URL = isDev && hostname === 'localhost' ? 'http://localhost:4654' : nonHashedUrl;
 const BASE_WS_URL = BASE_HTTP_URL.replace('http', 'ws');
 const JSON_HEADERS = {Accept: 'application/json', 'Content-Type': 'application/json'};
+const PATCH_HEADERS = {Accept: 'application/json', 'Content-Type': 'application/strategic-merge-patch+json'};
 const PROTO_HEADERS = {Accept: 'application/vnd.kubernetes.protobuf', 'Content-Type': 'application/json'};
 
 async function requestInner(path: string, params?: any, autoLogoutOnAuthError = true, isProtobuf = false) {
@@ -87,22 +88,25 @@ export function apiFactory<T extends ApiItem<any, any>>(group: string, version: 
         resource: {group, resource},
         list: (cb: StreamCallback<T[]>, errCb?: ErrorCallback) => streamResults(url, cb, errCb),
         get: (name: string, cb: StreamCallback<T>, errCb?: ErrorCallback) => streamResult(url, name, cb, errCb),
+        //patch: (body: any) => patch(url, body),
         post: (body: any) => post(url, body),
         put: (body: any) => put(`${url}/${body.metadata.name}`, body),
         delete: (name: string) => remove(`${url}/${name}`),
     };
 }
 
-export function apiFactoryWithNamespace<T extends ApiItem<any, any>>(group: string, version: string, resource: string, includeScale = false) {
+export function apiFactoryWithNamespace<T extends ApiItem<any, any>>(group: string, version: string, resource: string, includeScale = false, includeRestart = false) {
     const apiRoot = getApiRoot(group, version);
     return {
         resource: {group, resource},
         list: (namespace: string | undefined, cb: StreamCallback<T[]>, errCb?: ErrorCallback) => streamResults(url(namespace), cb, errCb),
         get: (namespace: string, name: string, cb: StreamCallback<T>, errCb?: ErrorCallback) => streamResult(url(namespace), name, cb, errCb),
+        patch: (body: any) => patch(url(body.metadata.namespace), body),
         post: (body: any) => post(url(body.metadata.namespace), body),
         put: (body: any) => put(`${url(body.metadata.namespace)}/${body.metadata.name}`, body),
         delete: (namespace: string, name: string) => remove(`${url(namespace)}/${name}`),
         scale: includeScale ? apiScaleFactory(apiRoot, resource) : undefined,
+        restart: includeRestart ? apiRestartFactory(apiRoot, resource) : undefined,
     };
 
     function url(namespace?: string) {
@@ -114,6 +118,20 @@ function getApiRoot(group: string, version: string) {
     return group ? `/apis/${group}/${version}` : `api/${version}`;
 }
 
+function apiRestartFactory(apiRoot: string, resource: string) {
+    return {
+        get: (namespace: string) => request(url(namespace)),
+        patch: (namespace: string, name: string, body: any) => patch(restartUrl(namespace, name), body),
+    };
+
+    function restartUrl(namespace: string, name: string) {
+        return `${apiRoot}/namespaces/${namespace}/${resource}/${name}?fieldManager=kubectl-rollout`;
+    }
+    function url(namespace?: string) {
+        return namespace ? `${apiRoot}/namespaces/${namespace}/${resource}` : `${apiRoot}/${resource}`;
+    }
+}
+
 function apiScaleFactory(apiRoot: string, resource: string) {
     return {
         get: (namespace: string, name: string) => request(url(namespace, name)),
@@ -123,6 +141,12 @@ function apiScaleFactory(apiRoot: string, resource: string) {
     function url(namespace: string, name: string) {
         return `${apiRoot}/namespaces/${namespace}/${resource}/${name}/scale`;
     }
+}
+
+export function patch(url: string, json: any, autoLogoutOnAuthError = true) {
+    const body = JSON.stringify(json);
+    const opts = {method: 'PATCH', body, headers: PATCH_HEADERS};
+    return request(url, opts, autoLogoutOnAuthError);
 }
 
 export function post(url: string, json: any, autoLogoutOnAuthError = true) {

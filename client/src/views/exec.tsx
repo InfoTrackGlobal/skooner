@@ -38,7 +38,7 @@ export default class Exec extends Base<Props, State> {
     onPod(pod: Pod) {
         const containers = pod.spec.containers.map(x => x.name);
         this.setState({containers});
-        this.setContainer(containers[0]);
+        this.setContainer(containers[containers.length - 1]);
     }
 
     setContainer(container: string) {
