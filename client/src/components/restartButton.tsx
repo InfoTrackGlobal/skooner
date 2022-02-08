@@ -64,9 +64,6 @@ export default class RestartButton extends Base<RestartButtonProps, RestartButto
             }
         };
         
-        //if (restartInfo == null) return;
-
-        //restartInfo.spec.template.metadata.annotations["kubectl.kubernetes.io/restartedAt"] = now.toString();
         await restartApi.patch(namespace, name, restartBody);
 
         this.close();
