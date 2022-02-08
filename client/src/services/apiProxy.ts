@@ -2,7 +2,7 @@ import _ from 'lodash';
 import {getToken, logout} from './auth';
 import log from '../utils/log';
 import {ApiItem} from '../utils/types';
-import {isProtoEligible, isProtoEnabled, protoParser} from '../utils/protoHelpers';
+import {isProtoEligible, protoParser} from '../utils/protoHelpers';
 
 type StreamCallback<T> = (data: T) => void;
 type ErrorCallback = (err: Error) => void;
@@ -20,7 +20,7 @@ type StreamArgs = {
 }
 
 const {hostname, href, hash, search} = window.location;
-const nonHashedUrl = href.replace(hash, '').replace(search, '');
+const nonHashedUrl = href.replace(hash, '').replace(search, '').replace('#', '');
 const isDev = process.env.NODE_ENV !== 'production';
 const BASE_HTTP_URL = isDev && hostname === 'localhost' ? 'http://localhost:4654' : nonHashedUrl;
 const BASE_WS_URL = BASE_HTTP_URL.replace('http', 'ws');
@@ -63,7 +63,7 @@ async function requestInner(path: string, params?: any, autoLogoutOnAuthError = 
 }
 
 export async function request(path: string, params?: any, autoLogoutOnAuthError = true) {
-    if (isProtoEligible(path) && isProtoEnabled()) {
+    if (isProtoEligible(path)) {
         return requestProto(path, params, autoLogoutOnAuthError);
     }
     return requestJson(path, params, autoLogoutOnAuthError);

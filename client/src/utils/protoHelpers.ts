@@ -6,32 +6,48 @@ const {NodeMetricsList} = k8s.io.metrics.pkg.apis.metrics.v1beta1;
 const {PodMetrics} = k8s.io.metrics.pkg.apis.metrics.v1beta1;
 const {PodMetricsList} = k8s.io.metrics.pkg.apis.metrics.v1beta1;
 const {EventList} = k8s.io.api.core.v1;
+const {NodeList} = k8s.io.api.core.v1;
+const {PodList} = k8s.io.api.core.v1;
 
 export const kindMap: {
         [index: string]: {
-            proto: typeof NodeMetrics | typeof NodeMetricsList | typeof PodMetrics | typeof PodMetricsList | typeof EventList,
-            path: string
+            proto: typeof NodeMetrics
+                | typeof NodeMetricsList
+                | typeof PodMetrics
+                | typeof PodMetricsList
+                | typeof EventList
+                | typeof NodeList
+                | typeof PodList,
+            paths: string[]
         }
     } = {
         NodeMetrics: {
             proto: NodeMetrics,
-            path: '/apis/metrics.k8s.io/v1beta1/node',
+            paths: ['/apis/metrics.k8s.io/v1beta1/node'],
         },
         NodeMetricsList: {
             proto: NodeMetricsList,
-            path: '/apis/metrics.k8s.io/v1beta1/nodes',
+            paths: ['/apis/metrics.k8s.io/v1beta1/nodes'],
         },
         PodMetrics: {
             proto: PodMetrics,
-            path: '/apis/metrics.k8s.io/v1beta1/pod',
+            paths: ['/apis/metrics.k8s.io/v1beta1/pod'],
         },
         PodMetricsList: {
             proto: PodMetricsList,
-            path: '/apis/metrics.k8s.io/v1beta1/pods',
+            paths: ['/apis/metrics.k8s.io/v1beta1/pods'],
         },
         EventList: {
             proto: EventList,
-            path: 'api/v1/events',
+            paths: ['api/v1/events'],
+        },
+        NodeList: {
+            proto: NodeList,
+            paths: ['api/v1/nodes'],
+        },
+        PodList: {
+            proto: PodList,
+            paths: ['api/v1/pods', 'v1beta1/namespaces/kube-system/pods', 'v1/namespaces/kube-system/pods'],
         },
     };
 
@@ -51,23 +67,11 @@ export function protoParser(raw: Uint8Array) {
     return {};
 }
 
-export function isProtoEnabled(): boolean {
-    return window.localStorage.getItem('protoEnabled') === 'true';
-}
-
 export function isProtoEligible(url: string) {
     for (const value of Object.values(kindMap)) {
-        if (url.includes(value.path)) {
+        if (value.paths.some(path => url.includes(path))) {
             return true;
         }
     }
     return false;
-}
-
-export function enableProto(): void {
-    window.localStorage.setItem('protoEnabled', 'true');
-}
-
-export function disableProto(): void {
-    window.localStorage.setItem('protoEnabled', 'false');
 }
